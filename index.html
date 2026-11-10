@@ -1,0 +1,921 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Sala Retos Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
+<style>
+/* Layout: una sola columna de lectura con navegación fija arriba; cada apartado del PDF es una sección */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --fg: #17202b;
+  --muted: #566170;
+  --line: #e1e5ea;
+  --accent: #0b4fb3;          /* azul de la carcasa de Brain */
+  --accent-soft: #e7eefb;
+  --ok: #1d6b45; --ok-bg: #e2f2e9;
+  --wait: #8a4a10; --wait-bg: #fbeedd;
+  --figure: #f3f5f8;
+  --display: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  --body: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0f141b; --surface: #161d26; --fg: #e8edf3; --muted: #9aa6b4; --line: #26303c;
+  --accent: #7fa8ff; --accent-soft: #1a2a45; --ok: #8fdcae; --ok-bg: #173226; --wait: #f4c08a; --wait-bg: #3a2814;
+  --figure: #e9edf2; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0f141b; --surface: #161d26; --fg: #e8edf3; --muted: #9aa6b4; --line: #26303c;
+  --accent: #7fa8ff; --accent-soft: #1a2a45; --ok: #8fdcae; --ok-bg: #173226; --wait: #f4c08a; --wait-bg: #3a2814;
+  --figure: #e9edf2; color-scheme: dark }
+
+body { background: var(--bg); color: var(--fg); font-family: var(--body); font-size: 16px; line-height: 1.6; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--surface); }
+h1, h2, h3 { font-family: var(--display); line-height: 1.2; text-wrap: balance; margin: 0; }
+h1 { font-size: clamp(30px, 5vw, 44px); letter-spacing: -0.02em; }
+h2 { font-size: clamp(24px, 3.5vw, 32px); letter-spacing: -0.01em; }
+h3 { font-size: 19px; }
+p { margin: 0; }
+a { color: var(--accent); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wrap { max-width: 920px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--surface); border-bottom: 1px solid var(--line); }
+header.top .wrap { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 24px; padding-block: 12px; }
+.brand { font-family: var(--display); font-weight: 700; font-size: 18px; color: var(--fg); text-decoration: none; margin-right: auto; }
+nav ul { display: flex; flex-wrap: wrap; gap: 4px 18px; list-style: none; margin: 0; padding: 0; }
+nav a { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 15px; }
+nav a:hover, nav a[aria-current="true"] { color: var(--accent); }
+
+main { display: flex; flex-direction: column; }
+section { padding-block: 56px; border-bottom: 1px solid var(--line); scroll-margin-top: 64px; }
+section:last-child { border-bottom: 0; }
+section > .wrap { display: flex; flex-direction: column; gap: 22px; }
+.eyebrow { font-size: 13px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); }
+.lead { font-size: 18px; color: var(--muted); max-width: 65ch; }
+#inicio .lead, #que-hacer .lead, #galeria .lead, #normas .lead, #normas .note { max-width: none; }
+.text { max-width: 68ch; display: flex; flex-direction: column; gap: 12px; }
+
+/* Datos clave */
+dl.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 1px; margin: 0; background: var(--line); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+dl.facts div { background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+dl.facts dt { font-size: 13px; color: var(--muted); }
+dl.facts dd { margin: 0; font-weight: 600; }
+
+/* Fichas de equipo */
+.robot { display: flex; flex-direction: column; gap: 18px; padding-top: 8px; }
+.robot + .robot { border-top: 1px dashed var(--line); padding-top: 36px; }
+.robot-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.status { display: inline-block; font-size: 13px; font-weight: 600; padding: 3px 10px; border-radius: 999px; }
+.status.ok { background: var(--ok-bg); color: var(--ok); }
+.status.wait { background: var(--wait-bg); color: var(--wait); }
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; align-items: start; }
+.cols > * { min-width: 0; }
+.list { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; }
+.list strong { font-weight: 600; }
+table.kv { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; font-size: 15px; }
+table.kv th, table.kv td { text-align: left; padding: 10px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+table.kv tr:last-child th, table.kv tr:last-child td { border-bottom: 0; }
+table.kv th { width: 42%; color: var(--muted); font-weight: 500; }
+table.kv caption { text-align: left; font-family: var(--display); font-weight: 600; font-size: 17px; padding-bottom: 8px; }
+
+/* Bloques de "Qué se puede hacer" */
+.group { display: flex; flex-direction: column; gap: 14px; }
+.group h3 { color: var(--accent); }
+.items { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.item { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.item h4 { margin: 0; font-family: var(--display); font-size: 16px; }
+.item p { color: var(--muted); font-size: 15px; }
+.note { font-size: 15px; color: var(--muted); border-left: 3px solid var(--accent); padding: 4px 0 4px 14px; }
+
+/* Brain */
+.figs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+.gallery { display: flex; flex-direction: column; gap: 28px; }
+.gallery-group { display: flex; flex-direction: column; gap: 10px; }
+.gallery-group h4 { margin: 0; font-family: var(--display); font-size: 17px; }
+.gallery-group p { color: var(--muted); font-size: 15px; max-width: 68ch; }
+figure { margin: 0; background: var(--figure); border: 1px solid var(--line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+figure img { display: block; width: 100%; height: auto; aspect-ratio: 900 / 760; object-fit: cover; max-width: 100%; }
+figcaption { font-size: 14px; padding: 10px 14px; background: var(--surface); color: var(--muted); border-top: 1px solid var(--line); }
+figcaption b { color: var(--fg); font-weight: 600; }
+.hero-fig { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+@media (max-width: 720px) { .hero-fig { grid-template-columns: 1fr; } }
+#brain .hero-fig { align-items: start; }
+.galeria { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 14px; margin-top: 8px; }
+.galeria figure { margin: 0; }
+.galeria img { aspect-ratio: 16 / 10; object-fit: cover; width: 100%; height: auto; transition: transform .25s ease; }
+.galeria a { display: block; overflow: hidden; border-radius: 10px; }
+.lightbox { position: fixed; inset: 0; z-index: 99999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,.9); padding: 16px; cursor: zoom-out; }
+.lightbox.open { display: flex; }
+.lightbox img { max-width: 100%; max-height: 100%; width: auto; height: auto; border-radius: 6px; cursor: default; }
+.lightbox button { position: absolute; background: rgba(255,255,255,.14); color: #fff; border: 0; border-radius: 50%; width: 44px; height: 44px; font-size: 26px; line-height: 1; cursor: pointer; }
+.lightbox button:hover { background: rgba(255,255,255,.28); }
+.lightbox .lb-cerrar { top: 14px; right: 14px; }
+.lightbox .lb-ant { left: 14px; top: 50%; transform: translateY(-50%); }
+.lightbox .lb-sig { right: 14px; top: 50%; transform: translateY(-50%); }
+.galeria a { cursor: zoom-in; }
+.galeria a:hover img { transform: scale(1.03); }
+.galeria figcaption { padding: 10px 12px; font-size: 14px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { .galeria img { transition: none; } }
+.sala-fig { margin-top: 24px; }
+.video-prueba { margin: 20px auto 0; max-width: 760px; }
+.video-prueba video { display: block; width: 100%; height: auto; max-width: 100%; aspect-ratio: 16 / 9; background: #000; }
+.video-prueba figcaption { padding: 10px 14px; font-size: 14px; color: var(--muted); }
+.sala-fig .seg { flex-wrap: wrap; max-width: 100%; }
+.sala-fig .seg button { white-space: nowrap; }
+.sala3d { position: relative; width: 100%; max-width: 100%; aspect-ratio: 16 / 8; min-height: 300px; background: var(--figure); cursor: grab; touch-action: pan-y; }
+.sala3d canvas { display: block; width: 100%; height: 100%; }
+@media (max-width: 720px) { .sala3d { aspect-ratio: 4 / 3; } }
+.go2-fig { margin-bottom: 8px; align-items: start; }
+.go2-fig .text > p:first-child { margin-top: 0; }
+.canvas3d.tall { aspect-ratio: 1 / 1.05; }
+.normas { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.norma { display: grid; grid-template-columns: minmax(0, 280px) minmax(0, 1fr); gap: 8px 32px; padding: 22px 0; border-bottom: 1px solid var(--line); }
+.norma-head { display: flex; align-items: baseline; gap: 12px; }
+.norma-n { flex: none; font-size: 14px; font-weight: 700; color: var(--accent); min-width: 1.6em; font-variant-numeric: tabular-nums; }
+.norma h4 { margin: 0; font-size: 17px; }
+.norma .list { gap: 6px; max-width: 70ch; }
+@media (max-width: 720px) { .norma { grid-template-columns: 1fr; padding: 18px 0; } }
+#brain .hero-fig .text > p:first-child { margin-top: 0; }
+
+.links { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 15px; }
+.links span { color: var(--muted); flex-basis: 100%; }
+.links a { font-weight: 600; overflow-wrap: anywhere; }
+.canvas3d { position: relative; width: 100%; max-width: 100%; aspect-ratio: 1 / 0.85; background: var(--figure); cursor: grab; touch-action: pan-y; }
+.canvas3d:active { cursor: grabbing; }
+.canvas3d canvas { display: block; width: 100% !important; height: 100% !important; }
+.canvas3d .loading { position: absolute; inset: 0; display: grid; place-items: center; color: #566170; font-size: 14px; margin: 0; }
+.viewer figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; }
+.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); }
+.seg button { font: inherit; font-size: 14px; font-weight: 600; border: 0; border-radius: 8px; padding: 6px 12px; background: transparent; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--accent); color: #fff; }
+footer { padding-block: 28px; color: var(--muted); font-size: 14px; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+</style>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#inicio">Sala Retos Hub</a>
+    <nav aria-label="Apartados">
+      <ul>
+        <li><a href="#inicio">Inicio</a></li>
+        <li><a href="#equipos">Equipos disponibles</a></li>
+        <li><a href="#que-hacer">Qué se puede hacer</a></li>
+        <li><a href="#brain">Brain Hub</a></li>
+        <li><a href="#galeria">Galería</a></li>
+        <li><a href="#normas">Normas y seguridad</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- INICIO -->
+  <section id="inicio">
+    <div class="wrap">
+      <div class="eyebrow">Universidad Politécnica de Cartagena</div>
+      <h1>Sala Retos Hub</h1>
+      <p class="lead">La Sala Retos Hub es el espacio de la UPCT dedicado a la robótica aplicada. Dispone del robot cuadrúpedo Unitree Go2, al que se sumará el humanoide Unitree R1 Edu Smart, y de Brain Hub, una plataforma desarrollada en la propia universidad para que los equipos de Retos integren sus proyectos de forma segura.</p>
+      <dl class="facts">
+        <div><dt>Ubicación</dt><dd>ETSIT · Aula PB4</dd></div>
+        <div><dt>Equipos disponibles</dt><dd>Go2 + R1 Edu Smart</dd></div>
+        <div><dt>Plataforma</dt><dd>Brain Hub</dd></div>
+        <div><dt>Uso</dt><dd>Con reserva previa</dd></div>
+      </dl>
+      <figure class="viewer sala-fig">
+        <div id="sala3d" class="sala3d" role="img" aria-label="Modelo 3D aproximado de la sala Retos Hub: nave de dos tramos con bóvedas de arista de ladrillo, pilares granates, pared amarilla, pizarra al fondo, mesas, taburetes y el robot Go2"><p class="loading">Cargando modelo 3D…</p></div>
+        <figcaption>
+          <span>Arrastra para girar · rueda o pellizco para acercar · modelo aproximado de la sala</span>
+        </figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- EQUIPOS DISPONIBLES -->
+  <section id="equipos">
+    <div class="wrap">
+      <div class="eyebrow">Equipos disponibles</div>
+      <h2>Robots de la sala</h2>
+      <p class="lead">La sala cuenta hoy con un robot cuadrúpedo en uso y espera un humanoide.</p>
+
+      <article class="robot" aria-labelledby="go2">
+        <div class="robot-head"><h3 id="go2">Unitree Go2 Pro</h3><span class="status ok">En uso</span></div>
+        <div class="hero-fig go2-fig">
+          <div class="text">
+            <p>El Unitree Go2 Pro es un robot cuadrúpedo de unos 15 kg, parecido en tamaño a un perro mediano, capaz de caminar, correr, subir escalones y moverse con agilidad por espacios interiores y exteriores. Gracias a su LiDAR 4D y a su cámara frontal percibe el entorno a su alrededor, puede generar mapas del espacio y detectar obstáculos para esquivarlos. Además, se comunica por Wi-Fi y 4G y transmite imagen en tiempo real, lo que lo convierte en una plataforma muy versátil para proyectos de navegación, percepción e interacción.</p>
+          </div>
+          <figure class="viewer">
+            <div id="go23d" class="canvas3d" role="img" aria-label="Modelo 3D del Unitree Go2 de pie, en gris con la cabeza LiDAR negra"><p class="loading">Cargando modelo 3D…</p></div>
+            <figcaption><span>Arrastra para girar · rueda o pellizco para acercar · modelo de <a href="https://github.com/unitreerobotics/unitree_mujoco" target="_blank" rel="noopener">Unitree Robotics</a> (<a href="modelo/licencia-unitree.txt" target="_blank" rel="noopener">licencia BSD-3</a>)</span></figcaption>
+          </figure>
+        </div>
+        <div class="cols">
+          <div class="group">
+            <h4 style="margin:0;font-family:var(--display);font-size:17px">Qué ofrece según el fabricante</h4>
+            <ul class="list">
+              <li><strong>Movilidad ágil:</strong> robot cuadrúpedo de unos 15 kg que camina, corre a hasta 3,5 m/s, sube escalones de hasta 16 cm y pendientes de 40°.</li>
+              <li><strong>Percepción del entorno:</strong> un LiDAR 4D L2 con visión de 360° × 96° le permite detectar obstáculos desde 5 cm, esquivarlos y generar mapas 3D del espacio.</li>
+              <li><strong>Visión en tiempo real:</strong> una cámara gran angular HD (1080p, 120°) transmite imagen en directo a la aplicación.</li>
+              <li><strong>Interacción por voz:</strong> micrófono y altavoz integrados para dar órdenes de voz y usar el intercomunicador.</li>
+              <li><strong>Conectividad completa:</strong> Wi-Fi 6, Bluetooth 5.2 y 4G con GPS.</li>
+              <li><strong>Control desde la aplicación:</strong> la app Unitree Go permite manejarlo a distancia, ver la cámara y el mapa, tomar fotos y vídeos y lanzar acciones predefinidas.</li>
+              <li><strong>Autonomía:</strong> entre 1 y 2 horas con su batería inteligente de 8000 mAh.</li>
+              
+            </ul>
+            <p class="links"><span>Más información:</span>
+              <a href="https://www.unitree.com/go2" target="_blank" rel="noopener">Web oficial del Go2</a>
+              <a href="https://support.unitree.com/home/en/developer/about_Go2" target="_blank" rel="noopener">Documentación técnica del Go2</a>
+              <a href="https://marketing.unitree.com/article/en/Go2/User_Manual.html" target="_blank" rel="noopener">Manual de uso del Go2 (Unitree, en inglés)</a>
+            </p>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:22px">
+            <div class="group">
+              <h4 style="margin:0;font-family:var(--display);font-size:17px">Cómo se controla</h4>
+              <ul class="list">
+                <li><strong>Mando manual.</strong> Funciona como un mando de consola permitiendo movimientos predeterminados a través de comandos.</li>
+                <li><strong>Mando pequeño.</strong> Mando cuyas órdenes tienen prioridad sobre las del resto de controles. Solo permite movimientos de desplazamiento, como avanzar o girar.</li>
+                <li><strong>Aplicación Unitree Go.</strong> Se conecta por Wi-Fi propio del robot.</li>
+              </ul>
+            </div>
+            <div style="overflow-x:auto">
+              <table class="kv">
+                <caption>En la sala</caption>
+                <tbody>
+                  <tr><th scope="row">Versión</th><td>Go2 Pro</td></tr>
+                  <tr><th scope="row">Tipo</th><td>Cuadrúpedo</td></tr>
+                  <tr><th scope="row">Estado</th><td>Desarrollado y probado</td></tr>
+                  <tr><th scope="row">Conexión con el Brain</th><td>Ethernet</td></tr>
+                  <tr><th scope="row">Ordenador asociado</th><td>OMEN Gaming Laptop 16</td></tr>
+                  <tr><th scope="row">Datos que ofrece</th><td>Cámara, LiDAR, posición, estado, micrófono y altavoz</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <article class="robot" aria-labelledby="r1">
+        <div class="robot-head"><h3 id="r1">Unitree R1 Edu Smart</h3><span class="status wait">Pendiente de recibir</span></div>
+        <div class="hero-fig go2-fig">
+          <div class="text">
+            <p>El Unitree R1 EDU es un robot humanoide ligero y ágil, de 1,23 m de altura y unos 29 kg, pensado para la investigación. Gracias a sus 26 articulaciones, puede andar, mantener el equilibrio y moverse con soltura, y su cabeza móvil le ayuda a percibir mejor lo que tiene alrededor. Ve el entorno con una cámara binocular y escucha con un conjunto de cuatro micrófonos, y además integra un modelo de inteligencia artificial. La versión EDU está abierta al desarrollo: da acceso a sus articulaciones y sensores, es compatible con las principales plataformas de simulación y admite ampliaciones como manos diestras o un módulo de cálculo Jetson Orin. Esto la convierte en una plataforma muy completa para proyectos de movimiento, percepción e interacción.</p>
+          </div>
+          <figure class="viewer">
+            <div id="r13d" class="canvas3d tall" role="img" aria-label="Modelo 3D del humanoide Unitree R1"><p class="loading">Cargando modelo 3D…</p></div>
+            <figcaption><span>Arrastra para girar · rueda o pellizco para acercar · modelo de <a href="https://github.com/unitreerobotics/unitree_mujoco" target="_blank" rel="noopener">Unitree Robotics</a> (<a href="modelo/licencia-unitree.txt" target="_blank" rel="noopener">licencia BSD-3</a>)</span></figcaption>
+          </figure>
+        </div>
+        <div class="cols">
+          <div class="group">
+            <h4 style="margin:0;font-family:var(--display);font-size:17px">Qué ofrece según el fabricante</h4>
+            <ul class="list">
+              <li><strong>Movilidad ágil.</strong> De 20 a 26 grados de libertad según la versión, para adaptarse a escenarios complejos.</li>
+              <li><strong>Estructura ligera y fácil de mantener.</strong> Mide como máximo 1,23 m y pesa unos 29 kg, lista para usar desde el primer momento.</li>
+              <li><strong>IA multimodal.</strong> Integrado con un modelo grande de voz e imagen.</li>
+              <li><strong>Interfaces abiertas.</strong> Control de articulaciones y sensores abierto, con soporte de las plataformas de simulación habituales.</li>
+            </ul>
+            <p class="links"><span>Más información:</span>
+              <a href="https://www.unitree.com/R1" target="_blank" rel="noopener">Web oficial del R1</a>
+              <a href="https://support.unitree.com/home/en/R1_developer/about_R1" target="_blank" rel="noopener">Documentación técnica del R1</a>
+              <a href="https://www.docs.mybotshop.de/downloads/R1_User_Manual.pdf" target="_blank" rel="noopener">Manual de usuario del R1 (MYBOTSHOP, en inglés)</a>
+            </p>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="kv">
+              <caption>En la sala</caption>
+              <tbody>
+                <tr><th scope="row">Versión</th><td>R1 Edu Smart (SKU AEV-R1-0109)</td></tr>
+                <tr><th scope="row">Tipo</th><td>Humanoide</td></tr>
+                <tr><th scope="row">Estado</th><td>Pendiente de recibir</td></tr>
+                <tr><th scope="row">Ordenador asociado</th><td>Módulo de cálculo de 100 TOPS (Jetson Orin, por confirmar)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </article>
+    </div>
+  </section>
+
+  <!-- QUÉ SE PUEDE HACER -->
+  <section id="que-hacer">
+    <div class="wrap">
+      <div class="eyebrow">Qué se puede hacer</div>
+      <h2>Lo que ya funciona con el Go2</h2>
+      <p class="lead">Por ahora solo se ha desarrollado el Unitree Go2. Todo se hace mediante software, aprovechando los sensores y las interfaces del robot. La navegación funciona por Ethernet y todas las funciones se manejan desde una aplicación web común.</p>
+
+      <div class="group">
+        <h3>Navegación y adaptación al entorno</h3>
+        <div class="items">
+          <div class="item"><h4>Navegación autónoma</h4><p>El robot no se limita a ejecutar una trayectoria: interpreta el entorno mientras avanza, detecta obstáculos, modifica el recorrido y busca alternativas para seguir hacia el destino. Combina la ruta global con un motor propio que decide cómo recorrerla, usando la posición, la odometría y los datos del LiDAR.</p></div>
+          <div class="item"><h4>Replanificación en marcha</h4><p>Al acercarse a un obstáculo, el motor evalúa el espacio y modifica la trayectoria sin necesidad, en condiciones normales, de detenerse a calcular una alternativa. Es una navegación dinámica, en lugar de encadenar avances, paradas y nuevos arranques.</p></div>
+          <div class="item"><h4>Obstáculos fijos y personas</h4><p>Evita obstáculos estáticos y dinámicos, incluidas personas que interrumpen el paso. Con observación y espacio suficientes, anticipa el conflicto y busca un recorrido alternativo mientras sigue avanzando. Las paradas quedan para situaciones que necesitan una comprobación: una aparición repentina muy próxima, un hueco de viabilidad dudosa o un bloqueo. Dispone de maniobras cortas de recuperación, incluido el retroceso cuando hay espacio.</p></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Pruebas realizadas en la sala</h3>
+        <div class="items">
+          <div class="item"><h4>Bloqueos y rodeos</h4><p>Se ha probado con bloqueos de varios metros y con obstáculos que impiden ir directo al destino. El LiDAR detecta el bloqueo a unos 3 metros, y el robot busca una ruta alternativa o se dirige a zonas donde el LiDAR aún no tiene información para generarla por ahí. Si no hay alternativa viable, permanece detenido y vuelve a evaluar el entorno, dentro de los límites de la misión.</p></div>
+          <div class="item"><h4>Pasos estrechos</h4><p>Antes de entrar ajusta su orientación y adapta la velocidad al espacio disponible. En la sala se separó la zona con taburetes y se dejó un único hueco estrecho: el Go2 pasó con unos 18 cm a cada lado del cuerpo, sin tocar ningún objeto.</p></div>
+          <div class="item"><h4>Orientación durante el seguimiento</h4><p>Prioriza avanzar mirando hacia el sentido de la ruta, evitando desplazamientos largos de espaldas o laterales innecesarios. Las maniobras de recuperación son acciones puntuales.</p></div>
+        </div>
+        <figure class="video-prueba">
+          <video controls preload="none" playsinline poster="video/prueba-sala.jpg" width="1280" height="720">
+            <source src="video/prueba-sala.mp4" type="video/mp4">
+          </video>
+          <figcaption>Vídeo de una prueba en la sala: el Go2 se desplaza por la sala esquivando objetos (32 s).</figcaption>
+        </figure>
+      </div>
+
+      <div class="group">
+        <h3>Validación y banco de simulación</h3>
+        <div class="items">
+          <div class="item"><h4>Banco de simulación</h4><p>Ejecuta el motor de navegación sobre una representación virtual del robot, sus sensores y los obstáculos. Se han acumulado del orden de 100.000 ejecuciones entre versiones y escenarios, con la capacidad de cálculo del ordenador de los becarios. Permite descartar versiones antes de llevarlas al Go2 y reducir el trabajo de campo.</p></div>
+          <div class="item"><h4>Escenarios de prueba</h4><p>Pasillos, obstáculos bajos, personas que cruzan, pasos estrechos, arranques bloqueados, cambios de destino, llegadas junto a muebles y recuperaciones desde zonas con poco espacio. Los problemas observados en el robot real se convierten en escenarios reproducibles para comprobar las correcciones.</p></div>
+          <div class="item"><h4>Comparación entre versiones</h4><p>Cada motor candidato pasa por las baterías de simulación. Se conservan las versiones anteriores y sus resultados, para comparar cambios en las mismas condiciones y recuperar una base conocida si una modificación empeora el funcionamiento. La simulación no sustituye a la prueba física.</p></div>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Interfaz web y adquisición de datos</h3>
+        <div class="items">
+          <div class="item"><h4>Interfaz web común</h4><p>Una sola aplicación, con pestañas y una conexión compartida con el robot: cámara, modelo 3D del Go2 con los datos del LiDAR, mapa y posición, batería, temperaturas y otros estados que publica el robot.</p></div>
+          <div class="item"><h4>Navegación desde la web</h4><p>Desde la web se eligen los destinos directamente sobre el mapa, se guardan puntos con nombre y se preparan recorridos de varios puntos. También se puede seguir el estado de cada misión y ver su resultado, e iniciar, cancelar o detener el robot en cualquier momento.</p></div>
+          <div class="item"><h4>Acceso desde cualquier dispositivo</h4><p>Basta conectarse a la red que creará el Brain e introducir en el navegador su dirección IP. Desde cualquier dispositivo se pueden enviar misiones y recibir los sensores y datos del Go2.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BRAIN -->
+  <section id="brain">
+    <div class="wrap">
+      <div class="eyebrow">Plataforma</div>
+      <h2>Brain Hub</h2>
+      <div class="hero-fig">
+        <div class="text">
+          <p>Brain es el módulo que da al Go2 todo lo que necesita para funcionar por su cuenta. Va montado sobre el lomo del robot y conecta el robot con la aplicación web y con los equipos de Retos. Está pensado como una plataforma que crece: se pueden ir sumando nuevos retos sin rehacerlo cada vez.</p>
+          <p>Tiene dos partes. Una base queda fija sobre el Go2, y encima va el Brain, una carcasa impresa en 3D que se sujeta con cuatro tornillos y que se puede quitar para trabajar con ella en la mesa. A los lados lleva dos raíles donde los equipos de Retos pueden fijar sus módulos.</p>
+        </div>
+        <figure class="viewer">
+          <div id="brain3d" class="canvas3d" role="img" aria-label="Modelo 3D aproximado del Brain: carcasa azul, tapa, raíles laterales negros y base de anclaje"><p class="loading">Cargando modelo 3D…</p></div>
+          <figcaption>
+            <span>Arrastra para girar · rueda o pellizco para acercar · modelo aproximado</span>
+          </figcaption>
+        </figure>
+      </div>
+
+      <div class="group">
+        <h3>Funciones</h3>
+        <div class="items">
+          <div class="item"><h4>Ejecuta el software del robot</h4><p>La conexión con el Go2, la navegación, los servicios de sensores y las comprobaciones de seguridad funcionarán directamente sobre el Brain.</p></div>
+          <div class="item"><h4>Sirve la aplicación web</h4><p>Crea la red a la que se conectan los dispositivos y aloja la aplicación desde la que se ven la cámara, el mapa y los sensores y se envían misiones.</p></div>
+          <div class="item"><h4>Abre el robot a los equipos</h4><p>A través de su API, en preparación, cada equipo de Retos podrá acceder a las funciones autorizadas para su proyecto sin tocar el control interno del robot ni recibir sus claves.</p></div>
+        </div>
+        <p class="note">El ordenador de los becarios quedará como apoyo opcional para el procesamiento más exigente.</p>
+      </div>
+
+      <div class="group">
+        <h3>Estructura</h3>
+        <div class="cols">
+          <ul class="list">
+            <li><strong>Montaje en dos partes.</strong> Una base que queda fijada al Go2 y un módulo extraíble con todos los componentes. Para retirarlo basta con quitar cuatro tornillos y desconectar la alimentación, sin desmontar el cableado interno.</li>
+            <li><strong>Uso en mesa o sobre el robot.</strong> El mismo módulo sirve para trabajar en el laboratorio y para montarlo en el Go2, lo que facilita las pruebas y el mantenimiento.</li>
+            <li><strong>Ventilación integrada.</strong> Ranuras en las esquinas y en la tapa, además del ventilador propio del ordenador.</li>
+          </ul>
+          <ul class="list">
+            <li><strong>Carcasa impresa en 3D.</strong> Diseñada a medida, con formas redondeadas y dividida en dos mitades atornilladas, para abrirla fácilmente.</li>
+            <li><strong>Componentes en el interior.</strong> Un ordenador, que procesa los datos del robot y ejecuta la aplicación, y un router, que genera la red a la que se conectan los dispositivos.</li>
+            <li><strong>Raíles laterales para módulos de Retos.</strong> A ambos lados de la carcasa, para que los equipos fijen sus propios módulos.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="group">
+        <h3>Validación antes de conectar un módulo</h3>
+        <p>Antes de montar un módulo en el Brain y conectarlo al Go2, cada equipo tendrá que validarlo en el banco de simulación. Es la misma herramienta con la que se prueba la navegación del robot: reproduce de forma virtual el Go2, sus sensores y los obstáculos, para detectar fallos sin poner en riesgo el robot ni a las personas.</p>
+        <div class="items">
+          <div class="item"><h4>1. Prueba en simulación</h4><p>El módulo se ejecuta sobre el robot virtual en escenarios como pasillos, pasos estrechos, obstáculos bajos o personas que cruzan. Así se comprueba cómo se comporta junto al Go2 antes de tocar el equipo real.</p></div>
+          <div class="item"><h4>2. Revisión de resultados</h4><p>Si el módulo falla o su comportamiento es mejorable, el equipo lo corrige y lo vuelve a pasar por las pruebas. Cada versión queda guardada con sus resultados, para comparar cambios en las mismas condiciones.</p></div>
+          <div class="item"><h4>3. Prueba en el robot real</h4><p>Solo las versiones que superan la simulación y la revisión del responsable pasan al Go2.</p></div>
+        </div>
+        <p class="note" style="max-width:none">La simulación no sustituye a la prueba física: la comprobación final siempre es el comportamiento del robot real, bajo supervisión.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GALERÍA -->
+  <section id="galeria">
+    <div class="wrap">
+      <div class="eyebrow">Fotos</div>
+      <h2>Galería</h2>
+      <p class="lead">Así es la sala Retos Hub y el Go2 con el que se trabaja hoy.</p>
+      <div class="galeria">
+          <figure><a href="galeria/sala-3.jpg" target="_blank" rel="noopener"><img src="galeria/sala-3.jpg" alt="Desde la ventana, hacia la pizarra" loading="lazy" width="1600" height="680"></a></figure>
+          <figure><a href="galeria/sala-10.jpg" target="_blank" rel="noopener"><img src="galeria/sala-10.jpg" alt="La sala desde la entrada, con la pared amarilla y la pizarra al fondo" loading="lazy" width="1600" height="900"></a></figure>
+          <figure><a href="galeria/sala-5.jpg" target="_blank" rel="noopener"><img src="galeria/sala-5.jpg" alt="Mesas de trabajo junto a la pared y el Go2" loading="lazy" width="1600" height="900"></a></figure>
+          <figure><a href="galeria/sala-9.jpg" target="_blank" rel="noopener"><img src="galeria/sala-9.jpg" alt="Zona de mesas y estanterías junto a la pared" loading="lazy" width="1600" height="900"></a></figure>
+          <figure><a href="galeria/sala-7.jpg" target="_blank" rel="noopener"><img src="galeria/sala-7.jpg" alt="El Go2 de frente, con el LiDAR y el LED de estado" loading="lazy" width="1600" height="900"></a></figure>
+          <figure><a href="galeria/sala-8.jpg" target="_blank" rel="noopener"><img src="galeria/sala-8.jpg" alt="El Go2 de lado" loading="lazy" width="1600" height="900"></a></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- NORMAS -->
+  <section id="normas">
+    <div class="wrap">
+      <div class="eyebrow">Uso de la sala</div>
+      <h2>Normas y seguridad</h2>
+      <p class="lead">Estas normas se aplican a todas las personas que usen la sala Retos Hub y sus equipos. Su objetivo es que nadie se haga daño, que los robots no sufran daños y que cada uso quede supervisado y registrado. Es obligatorio leerlas y aceptarlas antes de la primera sesión.</p>
+      <p class="note">Normas provisionales, pendientes de revisión por los servicios de la universidad.</p>
+      <div class="group">
+        <ol class="normas">
+          <li class="norma"><div class="norma-head"><span class="norma-n">1</span><h4>Acceso y autorización</h4></div><ul class="list"><li>Solo accederán a la sala personas autorizadas (profesorado, becarios y equipos de Retos inscritos).</li><li>El uso se reserva con antelación a través de la web, indicando quién, cuándo y qué robot.</li><li>Cada equipo de Retos podrá usar un robot por sesión.</li><li>Las cuentas de la aplicación y de la API son personales e intransferibles. No se comparten contraseñas ni claves.</li></ul></li>
+          <li class="norma"><div class="norma-head"><span class="norma-n">2</span><h4>Supervisión y responsabilidades</h4></div><ul class="list"><li>Los alumnos usarán los equipos siempre bajo la supervisión de una persona responsable, que conoce el robot y puede pararlo en cualquier momento.</li><li>Nadie se queda solo en la sala con un robot encendido.</li><li>El responsable puede detener una prueba o terminar la sesión en cualquier momento si considera que hay riesgo. Sus indicaciones se siguen siempre.</li><li>Cada equipo responde del uso que hace de los robots y de los módulos que aporta. Los daños causados por no seguir estas normas o las indicaciones del responsable serán responsabilidad de quien los cause.</li><li>Los robots y sus accesorios no salen de la sala ni se usan en otros espacios sin autorización expresa.</li></ul></li>
+          <li class="norma"><div class="norma-head"><span class="norma-n">3</span><h4>Antes de usar un robot</h4></div><ul class="list"><li>Despejar la zona de pruebas y retirar objetos frágiles, cables por el suelo y mochilas.</li><li>Revisar el robot: batería cargada, sin piezas sueltas ni daños visibles y con el Brain y los módulos bien fijados.</li><li>Comprobar que el mando de parada funciona antes de empezar.</li><li>Antes de introducir un nuevo módulo en el Brain que afecte al robot se requerirá la aprobación del responsable.</li></ul></li>
+          <li class="norma"><div class="norma-head"><span class="norma-n">4</span><h4>Durante el uso</h4></div><ul class="list"><li>El mando físico de parada de emergencia, siempre al alcance del responsable.</li><li>Distancia de seguridad: no acercarse al robot en movimiento y no tocarlo mientras camina. Mantener las manos lejos de las articulaciones de las patas, que pueden pillar los dedos.</li><li>No subirse ni sentarse sobre el robot, no empujarlo ni ponerle cargas que no estén autorizadas.</li><li>Pruebas nuevas: primero en simulación y luego en el robot real, con poca velocidad y sin personas en la zona.</li><li>El robot se usa solo en el suelo de la zona de pruebas: nunca sobre mesas, en zonas mojadas o fuera de la sala.</li><li>No levantar ni transportar el robot mientras está encendido.</li><li>Sin comida ni bebida en la zona de pruebas.</li><li>Si el robot falla (cae, pierde la red o hace un movimiento inesperado), se detiene y se avisa al responsable. No se intenta recogerlo con él en marcha.</li></ul></li>
+          <li class="norma"><div class="norma-head"><span class="norma-n">5</span><h4>Control del robot a través del Brain</h4></div><ul class="list"><li>Los alumnos manejan el robot únicamente a través de la aplicación web y la API del Brain, con los permisos asignados a su equipo.</li><li>El mando del fabricante y la aplicación Unitree Go quedan reservados a los responsables de la sala.</li><li>Está prohibido modificar el firmware del robot, desactivar sus sistemas de seguridad o conectarse a él sin pasar por el Brain.</li><li>El Brain registra quién usa cada robot, qué órdenes envía y qué módulos conecta. Este registro sirve para revisar cualquier incidencia.</li></ul></li>
+          <li class="norma"><div class="norma-head"><span class="norma-n">6</span><h4>Módulos de los equipos</h4></div><ul class="list"><li>Cada módulo se presenta y se revisa antes de montarlo o conectarlo por primera vez.</li><li>Los módulos se fijan solo en los raíles laterales. No se taladra, atornilla ni pega nada al robot ni a la carcasa.</li><li>Se conectan solo a los puertos libres del Brain (un USB tipo C y dos USB tipo A). No se abre la carcasa del Brain ni se conectan baterías o fuentes de alimentación propias sin autorización.</li><li>Un módulo no debe tapar el LiDAR, la cámara ni las rejillas de ventilación, ni sobresalir de forma que pueda golpear a personas u objetos.</li><li>El peso y el tamaño de cada módulo deben contar con la aprobación del responsable.</li><li>Al terminar la sesión, cada equipo retira su módulo, salvo que se acuerde lo contrario.</li></ul></li>
+          <li class="norma"><div class="norma-head"><span class="norma-n">7</span><h4>Baterías y carga</h4></div><ul class="list"><li>Cargar solo con el cargador original, bajo supervisión.</li><li>No dejar baterías cargando sin nadie en la sala, ni usar baterías hinchadas, golpeadas o dañadas.</li><li>Las baterías solo las colocan, retiran y guardan los responsables.</li></ul></li>
+          <li class="norma"><div class="norma-head"><span class="norma-n">8</span><h4>Humanoide R1</h4></div><ul class="list"><li>Normas a definir a la espera de su llegada.</li></ul></li>
+          <li class="norma"><div class="norma-head"><span class="norma-n">9</span><h4>Incidencias y emergencias</h4></div><ul class="list"><li>Cualquier golpe, caída, fallo o daño, por pequeño que sea, se comunica al responsable y se anota en el registro de incidencias.</li><li>Si alguien se lesiona, se avisa de inmediato al responsable y se siguen los protocolos de emergencia de la universidad.</li><li>Un robot con daños no se vuelve a usar hasta que lo revise un responsable.</li></ul></li>
+          <li class="norma"><div class="norma-head"><span class="norma-n">10</span><h4>Fin de sesión</h4></div><ul class="list"><li>Al apagar el robot, debe estar en su posición de reposo. Avisar siempre al responsable antes de desconectarlo.</li><li>Poner a cargar lo necesario, ordenar la sala y anotar las incidencias.</li><li>Cerrar la sesión en la aplicación.</li></ul></li>
+          <li class="norma"><div class="norma-head"><span class="norma-n">11</span><h4>Incumplimiento</h4></div><ul class="list"><li>No cumplir estas normas o las indicaciones del responsable puede suponer la retirada temporal o definitiva del acceso a la sala y a los equipos.</li></ul></li>
+        </ol>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">Sala Retos Hub · Universidad Politécnica de Cartagena · ETSIT, aula PB4</div>
+</footer>
+
+<script>
+  // Logotipos de Brain Hub y Reto UPCT (tapa y caras delantera y trasera), dibujados como calcomanías sobre el modelo.
+  function addLogos(scene, renderer) {
+    const BLUE = '#1260c9', INK = '#16181c';
+    function texture(kind) {
+      const c = document.createElement('canvas'); c.width = 1024; c.height = kind === 'tapa' ? 768 : 512;
+      const g = c.getContext('2d'); g.textBaseline = 'middle'; g.lineJoin = 'round';
+      const font = (px, w) => (w || 500) + ' ' + px + 'px "Helvetica Neue", Arial, sans-serif';
+      function reto(x, y, s) {           // dos cuadrados escalonados "RE" / "TO" y el texto "UPCT"
+        g.fillStyle = INK; g.fillRect(x, y, s, s); g.fillRect(x + s * 0.55, y + s * 0.78, s, s * 0.8);
+        g.fillStyle = BLUE; g.font = font(s * 0.42, 700); g.textAlign = 'center';
+        g.fillText('RE', x + s * 0.5, y + s * 0.4); g.fillText('TO', x + s * 1.05, y + s * 1.2);
+        g.fillStyle = INK; g.font = font(s * 0.62, 400); g.textAlign = 'left'; g.fillText('UPCT', x + s * 1.6, y + s * 1.25);
+      }
+      function hub(x, y, s) {            // cuadrado "HU" / "B"
+        g.fillStyle = INK; g.fillRect(x, y, s, s);
+        g.fillStyle = BLUE; g.font = font(s * 0.36, 700); g.textAlign = 'center';
+        g.fillText('HU', x + s * 0.42, y + s * 0.33); g.fillText('B', x + s * 0.68, y + s * 0.72);
+      }
+      function brain(x, y, px) { g.fillStyle = INK; g.font = font(px, 400); g.textAlign = 'left'; g.fillText('BRAIN', x, y); }
+      if (kind === 'tapa') { brain(440, 245, 140); reto(110, 335, 160); hub(730, 355, 165); }
+      else { brain(70, 95, 120); reto(70, 190, 125); hub(760, 150, 150); }
+      const t = new THREE.CanvasTexture(c); t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t;
+    }
+    function decal(kind, w, h, pos, normal) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshStandardMaterial({
+        map: texture(kind), transparent: true, roughness: 0.6, metalness: 0, polygonOffset: true, polygonOffsetFactor: -2 }));
+      m.position.set(pos[0], pos[1], pos[2]);
+      if (normal) { m.up.set(0, 0, 1); m.lookAt(pos[0] + normal[0], pos[1] + normal[1], pos[2] + normal[2]); }
+      scene.add(m);
+    }
+    decal('tapa', 250, 188, [0, 0, 64.2]);                    // tapa (mm, Z hacia arriba)
+    decal('cara', 116, 58, [-142.9, 0, 27], [-1, 0, 0]);     // cara trasera
+    decal('cara', 116, 58, [142.9, 0, 27], [1, 0, 0]);       // cara delantera
+  }
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+  // Visor 3D de Brain: carga las piezas (mm, Z arriba) y permite alternar montado / explosionado.
+  (function () {
+    const box = document.getElementById('brain3d');
+    if (!window.THREE || !box) return;
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(35, 1, 1, 5000);
+    camera.up.set(0, 0, 1);
+    camera.position.set(500, -540, 400);
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    box.appendChild(renderer.domElement);
+    scene.add(new THREE.HemisphereLight(0xffffff, 0x8a93a0, 0.75));
+    const sun = new THREE.DirectionalLight(0xffffff, 0.75); sun.position.set(200, -300, 500); scene.add(sun);
+    const fill = new THREE.DirectionalLight(0xffffff, 0.3); fill.position.set(-300, 250, 150); scene.add(fill);
+    const controls = new THREE.OrbitControls(camera, renderer.domElement);
+    controls.target.set(0, 0, 25); controls.enableDamping = true; controls.minDistance = 240; controls.maxDistance = 1400;
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    controls.autoRotate = !reduce; controls.autoRotateSpeed = 0.8;
+    renderer.domElement.addEventListener('pointerdown', () => { controls.autoRotate = false; });
+    const parts = []; let t = 0, target = 0;
+    function resize() { const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+    new ResizeObserver(resize).observe(box); resize();
+    fetch('modelo/brain_modelo.json').then(r => r.json()).then(data => {
+      data.piezas.forEach(p => {
+        const g = new THREE.BufferGeometry();
+        g.setAttribute('position', new THREE.Float32BufferAttribute(p.vertices, 3));
+        g.setIndex(p.caras);
+        const geo = g.toNonIndexed(); geo.computeVertexNormals();
+        const metal = p.nombre === 'ordenador' || p.nombre === 'convertidor';
+        const mat = new THREE.MeshStandardMaterial({ color: p.color, roughness: metal ? 0.45 : 0.6, metalness: metal ? 0.4 : 0.05, flatShading: true, side: THREE.DoubleSide });
+        const mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(p.posicion[0], p.posicion[1], p.posicion[2]);
+        scene.add(mesh); parts.push({ mesh, base: p.posicion, exp: p.explosion });
+      });
+      addLogos(scene, renderer);
+      const l = box.querySelector('.loading'); if (l) l.remove();
+    }).catch(() => { const l = box.querySelector('.loading'); if (l) l.textContent = 'No se ha podido cargar el modelo 3D.'; });
+    function frame() {
+      t += (target - t) * (reduce ? 1 : 0.08);
+      parts.forEach(p => p.mesh.position.set(p.base[0] + p.exp[0] * t, p.base[1] + p.exp[1] * t, p.base[2] + p.exp[2] * t));
+      controls.target.z = 25 + 70 * t;
+      controls.update(); renderer.render(scene, camera); requestAnimationFrame(frame);
+    }
+    frame();
+  })();
+</script>
+<script>
+  // Visores 3D de los robots: modelos oficiales de Unitree (unitree_mujoco), en metros y con Z hacia arriba. Se cargan al acercarse a la vista.
+  function robotViewer(id, url, cam, target, minD, maxD) {
+    const box = document.getElementById(id);
+    if (!window.THREE || !box) return;
+    let started = false;
+    function start() {
+      if (started) return; started = true;
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(30, 1, 0.01, 20);
+      camera.up.set(0, 0, 1); camera.position.set(cam[0], cam[1], cam[2]);
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      box.appendChild(renderer.domElement);
+      scene.add(new THREE.HemisphereLight(0xffffff, 0x6f7a88, 0.8));
+      const sun = new THREE.DirectionalLight(0xffffff, 0.8); sun.position.set(1, -1.5, 2); scene.add(sun);
+      const fill = new THREE.DirectionalLight(0xffffff, 0.3); fill.position.set(-1.5, 1, 0.6); scene.add(fill);
+      const controls = new THREE.OrbitControls(camera, renderer.domElement);
+      controls.target.set(0, 0, target); controls.enableDamping = true; controls.minDistance = minD; controls.maxDistance = maxD;
+      const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      controls.autoRotate = !reduce; controls.autoRotateSpeed = 0.8;
+      renderer.domElement.addEventListener('pointerdown', () => { controls.autoRotate = false; });
+      function resize() { const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
+      new ResizeObserver(resize).observe(box); resize();
+      const bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer;
+      fetch(url).then(r => r.json()).then(data => {
+        data.partes.forEach(p => {
+          const q = new Uint16Array(bytes(p.v)), idx = new Uint32Array(bytes(p.i));
+          const pos = new Float32Array(q.length);
+          for (let k = 0; k < q.length; k++) { const d = k % 3; pos[k] = p.min[d] + q[k] / 65535 * p.escala[d]; }
+          const g = new THREE.BufferGeometry();
+          g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(new THREE.BufferAttribute(idx, 1)); g.computeVertexNormals();
+          const col = new THREE.Color().setRGB(p.color[0], p.color[1], p.color[2]);
+          scene.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({
+            color: col, roughness: p.rugosidad != null ? p.rugosidad : 0.55, metalness: p.metal != null ? p.metal : 0.05,
+            emissive: p.emisivo ? col : 0x000000, side: THREE.DoubleSide })));
+        });
+        const l = box.querySelector('.loading'); if (l) l.remove();
+      }).catch(() => { const l = box.querySelector('.loading'); if (l) l.textContent = 'No se ha podido cargar el modelo 3D.'; });
+      (function frame() { controls.update(); renderer.render(scene, camera); requestAnimationFrame(frame); })();
+    }
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(e => { if (e.some(x => x.isIntersecting)) { io.disconnect(); start(); } }, { rootMargin: '300px' });
+      io.observe(box);
+    } else start();
+  }
+  robotViewer('go23d', 'modelo/go2_modelo.json', [1.15, -1.35, 0.75], 0.2, 0.6, 3.5);
+  robotViewer('r13d', 'modelo/r1_modelo.json', [1.7, -2.15, 1.15], 0.62, 1, 5);
+</script>
+<script>
+  // Modelo 3D aproximado de la sala (medidas a ojo a partir de fotos). Se construye al acercarse a la vista.
+  (function () {
+    const holder = document.getElementById('sala3d');
+    if (!holder) return;
+    let started = false;
+    function start() { if (started) return; started = true; buildRoom(); }
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver(e => { if (e.some(x => x.isIntersecting)) { io.disconnect(); start(); } }, { rootMargin: '200px' });
+      io.observe(holder);
+    } else start();
+    function buildRoom() {
+  const stage = document.getElementById('sala3d');
+  if (!window.THREE) { stage.querySelector('.loading').textContent = 'No se ha podido cargar el visor 3D.'; return; }
+
+  // Medidas aproximadas en metros. X = ancho (izquierda +X mirando hacia la pizarra), Z = largo (0 = ventana, 18 = pizarra), Y = altura.
+  const W = 7.5, L = 16, SPRING = 2.9, RISE = 2.0, HW = W / 2, BAY = L / 2;   // dos tramos de bóveda de arista
+  const vaultY = (x, z) => { const zc = z < BAY ? BAY / 2 : BAY * 1.5;
+    return SPRING + RISE * Math.max(Math.sqrt(Math.max(0, 1 - (x / HW) ** 2)), Math.sqrt(Math.max(0, 1 - ((z - zc) / (BAY / 2)) ** 2))); };
+
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(0xe9ece9);
+  const camera = new THREE.PerspectiveCamera(50, 1, 0.05, 100);
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  stage.appendChild(renderer.domElement);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true; controls.maxDistance = 40; controls.minDistance = 0.5;
+
+  scene.add(new THREE.HemisphereLight(0xfffaf2, 0x8a8f8c, 0.65));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.45); sun.position.set(-4, 10, 4); scene.add(sun);
+  [3, 8, 13].forEach(z => { const p = new THREE.PointLight(0xfff4e0, 0.35, 14); p.position.set(0, 3.2, z); scene.add(p); });
+
+  // ---------- texturas dibujadas en canvas ----------
+  function canvasTex(w, h, draw, rx, ry) {
+    const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h);
+    const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+    t.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    if (rx) { t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry); }
+    return t;
+  }
+  function rnd(seed) { let s = seed; return () => (s = (s * 16807) % 2147483647) / 2147483647; }
+  const brick = canvasTex(512, 512, (g, w, h) => {
+    const r = rnd(7); g.fillStyle = '#8a7462'; g.fillRect(0, 0, w, h);
+    const bh = 16, bw = 64;
+    for (let y = 0; y < h; y += bh) for (let x = -((y / bh) % 2) * bw / 2; x < w; x += bw) {
+      const k = 0.78 + r() * 0.35; const base = [172, 130, 98];
+      g.fillStyle = `rgb(${base.map(v => Math.min(255, v * k) | 0).join(',')})`;
+      g.fillRect(x + 2, y + 2, bw - 4, bh - 4);
+    }
+  }, 6, 4);
+  const tiles = canvasTex(256, 256, (g, w, h) => {
+    g.fillStyle = '#c9cdcf'; g.fillRect(0, 0, w, h); g.strokeStyle = '#a9aeb1'; g.lineWidth = 3; g.strokeRect(0, 0, w, h);
+    g.fillStyle = 'rgba(255,255,255,0.15)'; g.fillRect(8, 8, w * 0.5, h * 0.5);
+  }, W / 0.6, L / 0.6);
+  const stone = canvasTex(128, 256, (g, w, h) => {
+    const r = rnd(3); g.fillStyle = '#9b8f78'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 400; i++) { g.fillStyle = `rgba(${90 + r() * 80},${80 + r() * 70},${60 + r() * 50},0.35)`; g.fillRect(r() * w, r() * h, 3 + r() * 10, 2 + r() * 6); }
+  });
+  // Pared amarilla con las letras grandes de HUB y el logotipo del programa (versión simplificada).
+  // Pared amarilla (una luneta de 8 × 4,9 m; 200 px por metro). Posiciones y tamaños medidos sobre la foto de la pared.
+  const yellowWall = canvasTex(1600, 980, (g, w, h) => {
+    const X = u => u * 200, Y = v => h - v * 200;                       // metros en la pared -> píxeles
+    const INK = '#141517', YEL = '#f6c800';
+    g.fillStyle = YEL; g.fillRect(0, 0, w, h);
+    // Encaja un texto en una caja (u0, v0) - (u1, v1) en metros, estirándolo para que coincida con la foto.
+    function fit(txt, u0, v0, u1, v1, weight, color) {
+      g.save(); g.font = (weight || 800) + ' 400px "Arial Black", "Helvetica Neue", Arial, sans-serif';
+      const m = g.measureText(txt), cap = m.actualBoundingBoxAscent || 290, wid = m.actualBoundingBoxRight - (m.actualBoundingBoxLeft ? -m.actualBoundingBoxLeft : 0) || m.width;
+      g.translate(X(u0) + (m.actualBoundingBoxLeft || 0) * (X(u1) - X(u0)) / wid, Y(v0));
+      g.scale((X(u1) - X(u0)) / wid, (Y(v0) - Y(v1)) / cap);
+      g.fillStyle = color || INK; g.textBaseline = 'alphabetic'; g.fillText(txt, 0, 0); g.restore();
+    }
+    // Letras grandes: «HU» arriba, cortada por el arco, y «B» abajo a la derecha.
+    fit('H', 1.40, 3.30, 3.62, 5.40);
+    fit('U', 3.78, 3.30, 5.57, 5.40);
+    fit('B', 5.50, 1.22, 7.03, 2.95);
+    // Logotipo del programa: dos cuadrados escalonados con «RE» y «TO», y el texto a la derecha.
+    g.fillStyle = INK;
+    g.fillRect(X(1.30), Y(1.58), X(0.40), X(0.32)); g.fillRect(X(1.58), Y(1.35), X(0.37), X(0.30));
+    fit('RE', 1.36, 1.36, 1.66, 1.52, 800, YEL); fit('TO', 1.63, 1.13, 1.91, 1.29, 800, YEL);
+    g.fillStyle = INK; g.font = '500 21px Arial, sans-serif'; g.textBaseline = 'alphabetic';
+    g.fillText('PROGRAMA', X(2.05), Y(1.47)); g.fillText('RETO', X(2.05), Y(1.37)); g.fillText('UPCT', X(2.05), Y(1.16));
+    // Entidades que acompañan al logotipo (solo el nombre, sin escudos).
+    g.font = '600 15px Arial, sans-serif'; g.fillText('Región de Murcia', X(2.68), Y(1.35));
+    g.font = '500 30px Arial, sans-serif'; g.fillText('f SéNeCa', X(3.40), Y(1.40));
+    g.font = '400 9px Arial, sans-serif'; g.fillText('Agencia de Ciencia y Tecnología', X(3.48), Y(1.30)); g.fillText('Región de Murcia', X(3.48), Y(1.25));
+    // Señal del extintor.
+    g.fillStyle = '#c8202a'; g.fillRect(X(7.30), Y(2.78), X(0.21), X(0.32));
+    g.fillStyle = '#ffffff'; g.font = '700 8px Arial, sans-serif'; g.fillText('EXTINTOR', X(7.31), Y(2.50));
+    g.fillRect(X(7.36), Y(2.72), X(0.05), X(0.14));
+  });
+
+  // ---------- materiales ----------
+  const M = {
+    white: new THREE.MeshStandardMaterial({ color: 0xf4f3ef, roughness: 0.9 }),
+    whiteD: new THREE.MeshStandardMaterial({ color: 0xf4f3ef, roughness: 0.9, side: THREE.DoubleSide }),
+    brick: new THREE.MeshStandardMaterial({ map: brick, roughness: 1, side: THREE.BackSide }),
+    rib: new THREE.MeshStandardMaterial({ color: 0x7d6656, roughness: 1 }),
+    floor: new THREE.MeshStandardMaterial({ map: tiles, roughness: 0.55 }),
+    maroon: new THREE.MeshStandardMaterial({ color: 0x5b1c1d, roughness: 0.7 }),
+    stone: new THREE.MeshStandardMaterial({ map: stone, roughness: 1 }),
+    yellow: new THREE.MeshStandardMaterial({ map: yellowWall, roughness: 0.8 }),
+    green: new THREE.MeshStandardMaterial({ color: 0x1f5a45, roughness: 0.8 }),
+    alu: new THREE.MeshStandardMaterial({ color: 0x9aa0a5, roughness: 0.4, metalness: 0.5 }),
+    grey: new THREE.MeshStandardMaterial({ color: 0x6d7378, roughness: 0.6 }),
+    glass: new THREE.MeshStandardMaterial({ color: 0xc9d3d6, roughness: 0.2, transparent: true, opacity: 0.75 }),
+    dark: new THREE.MeshStandardMaterial({ color: 0x1b1c1f, roughness: 0.6 }),
+    chrome: new THREE.MeshStandardMaterial({ color: 0xd8dbde, roughness: 0.2, metalness: 0.9 }),
+    sage: new THREE.MeshStandardMaterial({ color: 0x8fa9a8, roughness: 0.95 }),
+    beige: new THREE.MeshStandardMaterial({ color: 0xd9d4c6, roughness: 0.95 }),
+    rug: new THREE.MeshStandardMaterial({ color: 0xa9aba6, roughness: 1 }),
+    lamp: new THREE.MeshStandardMaterial({ color: 0xb8bcbf, roughness: 0.5, metalness: 0.3 }),
+    glow: new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xfff3dc, emissiveIntensity: 1 }),
+    laptop: new THREE.MeshStandardMaterial({ color: 0x2b2e33, roughness: 0.4, metalness: 0.4 })
+  };
+  const box = (w, h, d, mat, x, y, z, parent) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), mat); m.position.set(x, y, z); (parent || scene).add(m); return m; };
+  const cyl = (rt, rb, h, mat, x, y, z, seg, parent) => { const m = new THREE.Mesh(new THREE.CylinderGeometry(rt, rb, h, seg || 20), mat); m.position.set(x, y, z); (parent || scene).add(m); return m; };
+  const bar = (a, b, r, mat, parent) => { // cilindro entre dos puntos
+    const A = new THREE.Vector3(...a), B = new THREE.Vector3(...b), d = B.clone().sub(A);
+    const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, d.length(), 10), mat);
+    m.position.copy(A).add(d.multiplyScalar(0.5)); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), B.clone().sub(A).normalize());
+    (parent || scene).add(m); return m;
+  };
+
+  // ---------- envolvente: suelo, dos bóvedas de arista, paredes con lunetas y testeros ----------
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(W, L), M.floor); floor.rotation.x = -Math.PI / 2; floor.position.set(0, 0, L / 2); scene.add(floor);
+  const shell = new THREE.Group(); scene.add(shell);
+  // Bóveda de arista: dos bóvedas de cañón que se cruzan; en cada punto manda la más alta, y las aristas quedan en las diagonales.
+  [0, BAY].forEach(z0 => {
+    const n = 64, g = new THREE.PlaneGeometry(W, BAY, n, n), p = g.attributes.position;
+    for (let i = 0; i < p.count; i++) { const x = p.getX(i), z = z0 + BAY / 2 - p.getY(i); p.setXYZ(i, x, vaultY(x, z), z); }
+    g.computeVertexNormals();
+    const v = new THREE.Mesh(g, M.brick); shell.add(v);              // se ve solo desde dentro
+  });
+  // Lunetas: un arco por tramo en cada pared lateral y uno en cada testero.
+  function lunette(span, mat, holes, uvFit) {
+    const a = span / 2, sh = new THREE.Shape(); sh.moveTo(-a, 0); sh.lineTo(a, 0); sh.lineTo(a, SPRING);
+    sh.absellipse(0, SPRING, a, RISE, 0, Math.PI, false); sh.lineTo(-a, 0);
+    (holes || []).forEach(([x, y, w, h]) => { const q = new THREE.Path(); q.moveTo(x, y); q.lineTo(x + w, y); q.lineTo(x + w, y + h); q.lineTo(x, y + h); q.lineTo(x, y); sh.holes.push(q); });
+    const g = new THREE.ShapeGeometry(sh, 32);
+    if (uvFit) { const P = g.attributes.position, U = g.attributes.uv; for (let i = 0; i < P.count; i++) U.setXY(i, (P.getX(i) + a) / span, P.getY(i) / (SPRING + RISE)); }
+    return new THREE.Mesh(g, mat);
+  }
+  const YELLOW_BAY = 1;                                                // tramo de la pizarra, lado izquierdo mirando hacia ella
+  [-1, 1].forEach(sd => [0, 1].forEach(k => {
+    const yellow = sd === 1 && k === YELLOW_BAY;
+    const m = lunette(BAY, yellow ? M.yellow : M.white, null, yellow);
+    m.rotation.y = sd * -Math.PI / 2; m.position.set(sd * HW, 0, BAY * (k + 0.5)); shell.add(m);
+  }));
+  const wWin = lunette(W, M.white, [[-0.75, 1.0, 1.5, 1.3]]); shell.add(wWin);
+  const wBoard = lunette(W, M.white); wBoard.rotation.y = Math.PI; wBoard.position.z = L; shell.add(wBoard);
+  // Arcos de ladrillo: fajón central, arcos formeros sobre las lunetas y arcos en los testeros.
+  function arc(a, isSide, x, z) {
+    const t = new THREE.Mesh(new THREE.TorusGeometry(a - 0.05, 0.09, 8, 48, Math.PI), M.rib);
+    t.scale.set(1, RISE / (a - 0.05), 1); if (isSide) t.rotation.y = Math.PI / 2; t.position.set(x, SPRING, z); shell.add(t);
+  }
+  [0.12, BAY, L - 0.12].forEach(z => arc(HW, false, 0, z));
+  [-1, 1].forEach(sd => [0, 1].forEach(k => arc(BAY / 2, true, sd * (HW - 0.12), BAY * (k + 0.5))));
+
+  // ---------- pilares de hierro granates con capitel de ménsulas ----------
+  function pillar(x, z, stonePanels, endWall) {
+    const s = Math.sign(x), d = endWall ? 0.5 : 0.95, zz = endWall ? z - 0.25 : z;
+    box(0.55, 2.35, d, M.maroon, x - s * 0.27, 1.175, zz);
+    if (stonePanels) { box(0.02, 0.7, d - 0.2, M.stone, x - s * 0.555, 0.75, zz); box(0.02, 0.7, d - 0.2, M.stone, x - s * 0.555, 1.6, zz); }
+    const cap = new THREE.Mesh(new THREE.CylinderGeometry(0.62, 0.38, 0.5, 4, 1), M.maroon); cap.rotation.y = Math.PI / 4;
+    cap.scale.set(1, 1, endWall ? 0.7 : 1.25); cap.position.set(x - s * 0.3, 2.6, zz); scene.add(cap);
+    box(1.1, 0.05, endWall ? 0.7 : 1.3, M.maroon, x - s * 0.35, 2.32, zz); box(1.25, 0.05, endWall ? 0.8 : 1.45, M.maroon, x - s * 0.35, 2.86, zz);
+  }
+  [-1, 1].forEach(sd => { pillar(sd * HW, BAY, sd < 0); pillar(sd * HW, L, sd < 0, true); });
+
+  // ---------- pared amarilla: fancoil, extintor y enchufes ----------
+  box(0.25, 0.68, 2.6, new THREE.MeshStandardMaterial({ color: 0xdfe6e4, roughness: 0.7 }), HW - 0.13, 0.5, BAY + 4.76);   // fancoil
+  box(0.27, 0.04, 2.62, M.grey, HW - 0.13, 0.85, BAY + 4.76);                                                         // rejilla superior
+  const red = new THREE.MeshStandardMaterial({ color: 0xc8202a, roughness: 0.4 });
+  cyl(0.08, 0.08, 0.5, red, HW - 0.12, 1.72, BAY + 7.4);                                                            // extintor
+  [[1.8, 0.42], [6.95, 0.69]].forEach(([u, v]) => box(0.04, 0.08, 0.15, M.white, HW - 0.02, v, BAY + u));               // enchufes
+
+  // ---------- testero de la pizarra: pizarra, pantalla, proyector y puerta ----------
+  // Mirando desde la ventana: pizarra centrada y algo a la izquierda (+X), puerta a la derecha (-X).
+  const PX = 0.5;
+  box(3.6, 1.15, 0.05, M.green, PX, 1.6, L - 0.04); box(3.7, 1.25, 0.03, M.alu, PX, 1.6, L - 0.02);
+  box(1.9, 0.6, 0.03, M.white, PX, 2.65, L - 0.1); box(2.0, 0.1, 0.12, M.alu, PX, 2.98, L - 0.12);   // pantalla enrollable
+  box(0.4, 0.15, 0.3, M.white, PX, vaultY(PX, L - 3) - 0.35, L - 3);    // proyector colgado
+  bar([PX, vaultY(PX, L - 3) - 0.3, L - 3], [PX, vaultY(PX, L - 3), L - 3], 0.015, M.grey);
+  box(0.95, 2.15, 0.06, M.glass, -2.0, 1.075, L - 0.04); box(1.05, 2.25, 0.04, M.grey, -2.0, 1.125, L - 0.02);
+  box(0.35, 0.12, 0.04, M.white, -2.0, 2.4, L - 0.03);                    // cartel sobre la puerta
+  // Mampara de cristal en la luneta del testero, por encima del muro blanco.
+  const gsh = new THREE.Shape(); gsh.moveTo(-HW, 0); gsh.lineTo(HW, 0); gsh.absellipse(0, 0, HW, RISE, 0, Math.PI, false);
+  const glassArc = new THREE.Mesh(new THREE.ShapeGeometry(gsh, 32), new THREE.MeshStandardMaterial({ color: 0x55606a, roughness: 0.15, metalness: 0.2, transparent: true, opacity: 0.85, side: THREE.DoubleSide }));
+  glassArc.position.set(0, SPRING + 0.15, L - 0.05); glassArc.scale.set(0.97, 0.9, 1); shell.add(glassArc);
+
+  // ---------- testero de la ventana: ventana, persiana, estanterías y armarios ----------
+  box(1.5, 1.3, 0.04, M.grey, 0, 1.65, 0.02);
+  box(1.4, 1.2, 0.02, new THREE.MeshStandardMaterial({ color: 0x3a4148, roughness: 0.2 }), 0, 1.65, 0.04);
+  box(1.9, 0.75, 0.1, new THREE.MeshStandardMaterial({ color: 0xdfe0e0, roughness: 0.9 }), 0, 2.75, 0.12); // estor
+  function shelf(x, w, h) {
+    const g = new THREE.Group(); g.position.set(x, 0, 0.2);
+    box(w, 0.02, 0.35, M.white, 0, h, 0, g); [-1, 1].forEach(s => box(0.02, h, 0.35, M.white, s * w / 2, h / 2, 0, g));
+    for (let y = 0.02; y < h; y += 0.38) box(w, 0.02, 0.35, M.white, 0, y, 0, g);
+    box(w, h, 0.01, M.white, 0, h / 2, -0.17, g); scene.add(g);
+  }
+  [[-2.9, 0.45, 1.5], [-2.35, 0.45, 2.45], [-1.7, 0.75, 1.95], [1.7, 0.75, 1.95], [2.35, 0.45, 2.45], [2.9, 0.45, 1.5]].forEach(a => shelf(...a));
+  box(2.1, 0.85, 0.45, M.white, 0, 0.425, 0.3);                             // armarios bajo la ventana
+  cyl(0.12, 0.1, 0.12, M.dark, 1.75, 2.0, 0.2); cyl(0.2, 0.12, 0.3, new THREE.MeshStandardMaterial({ color: 0x3f7a3e, roughness: 1 }), 1.75, 2.2, 0.2);
+
+  // ---------- mobiliario ----------
+  function table(x, z, rotY) {          // mesa abatible blanca de patas en tijera
+    const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = rotY || 0;
+    box(1.4, 0.03, 0.72, M.white, 0, 1.02, 0, g);
+    [-0.6, 0.6].forEach(dx => { bar([dx, 0, -0.3], [dx, 1.0, 0.25], 0.018, M.white, g); bar([dx, 0, 0.25], [dx, 1.0, -0.25], 0.018, M.white, g); });
+    box(1.2, 0.02, 0.22, M.dark, 0, 0.32, 0.05, g);                         // reposapiés negro
+    scene.add(g); return g;
+  }
+  function stool(x, z) {
+    const g = new THREE.Group(); g.position.set(x, 0, z);
+    cyl(0.19, 0.19, 0.07, M.dark, 0, 0.66, 0, 24, g); cyl(0.025, 0.025, 0.5, M.chrome, 0, 0.38, 0, 12, g);
+    const ring = new THREE.Mesh(new THREE.TorusGeometry(0.2, 0.01, 6, 24), M.chrome); ring.rotation.x = Math.PI / 2; ring.position.y = 0.25; g.add(ring);
+    for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + 0.4; bar([0, 0.3, 0], [Math.cos(a) * 0.24, 0.01, Math.sin(a) * 0.24], 0.012, M.chrome, g); }
+    scene.add(g);
+  }
+  const pouf = (x, z, mat) => box(0.46, 0.44, 0.46, mat, x, 0.22, z);
+
+  // Mesas a lo largo de las paredes (lado derecho = -X mirando a la pizarra), a ambos lados del pilar central.
+  [1.6, 3.05, 4.5, 6.4, 9.6, 11.05, 13.3, 14.75].forEach(z => { const x = -HW + 0.45; table(x, z, Math.PI / 2); stool(x + 0.7, z); });
+  [2.2, 3.65, 5.1].forEach(z => { const x = HW - 0.45; table(x, z, -Math.PI / 2); stool(x - 0.7, z - 0.3); });
+  // Puesto central de trabajo junto a la ventana, con portátiles y monitor.
+  table(0, 1.45); stool(0, 2.05); stool(-0.75, 2.0); stool(0.75, 2.0);
+  [[-0.4, 0.94], [0.1, 0.94]].forEach(([x, z]) => { box(0.32, 0.015, 0.22, M.laptop, x, 1.045, z + 0.48); const s = box(0.32, 0.22, 0.01, M.laptop, x, 1.16, z + 0.38); s.rotation.x = -0.25; });
+  box(0.45, 0.3, 0.03, M.dark, 0.55, 1.25, 1.3);
+  // Zona de descanso junto a la pared amarilla: alfombra y pufs.
+  box(2.6, 0.01, 4.6, M.rug, HW - 1.5, 0.006, 12.2);
+  pouf(HW - 1.2, 11.0, M.sage); pouf(HW - 1.5, 12.3, M.beige); pouf(HW - 2.9, 13.9, M.sage); pouf(0.4, 6.3, M.beige);
+  stool(-0.9, 12.6); stool(-1.7, 13.6); stool(0.8, 14.8); stool(0.1, 7.4);
+
+  // Lámparas lineales colgadas, cruzando la nave.
+  [2.0, 4.6, 7.1, 9.5, 12.0, 14.6].forEach((z, i) => {
+    const len = i % 2 ? 4.2 : 4.6, y = 3.35;
+    box(len, 0.05, 0.07, M.lamp, 0, y, z); box(len - 0.1, 0.005, 0.04, M.glow, 0, y - 0.028, z);
+    [-len / 2 + 0.3, len / 2 - 0.3].forEach(x => bar([x, y, z], [x, vaultY(x, z), z], 0.003, M.grey));
+  });
+
+  // ---------- robot Go2 (modelo oficial de Unitree, en metros con Z hacia arriba) ----------
+  const bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer;
+  fetch('modelo/go2_modelo.json').then(r => r.json()).then(data => {
+    const go2 = new THREE.Group();
+    data.partes.forEach(p => {
+      const q = new Uint16Array(bytes(p.v)), idx = new Uint32Array(bytes(p.i)), pos = new Float32Array(q.length);
+      for (let k = 0; k < q.length; k++) { const d = k % 3; pos[k] = p.min[d] + q[k] / 65535 * p.escala[d]; }
+      const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setIndex(new THREE.BufferAttribute(idx, 1)); g.computeVertexNormals();
+      const col = new THREE.Color().setRGB(p.color[0], p.color[1], p.color[2]);
+      go2.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: col, roughness: p.rugosidad != null ? p.rugosidad : 0.55, metalness: p.metal || 0.05, emissive: p.emisivo ? col : 0x000000, side: THREE.DoubleSide })));
+    });
+    go2.rotation.x = -Math.PI / 2; go2.rotation.z = Math.PI / 2 + 0.5;
+    go2.position.set(-1.3, 0, 2.9); scene.add(go2);
+  }).catch(() => {});
+
+  // ---------- cámaras ----------
+  const VIEWS = {
+    'sv-general': { pos: [10, 9, -3], target: [0, 1, 8] },
+    'sv-ventana': { pos: [0.4, 1.65, 0.9], target: [0, 1.4, 12] },
+    'sv-pizarra': { pos: [-0.5, 1.7, 15.3], target: [0, 1.2, 4] },
+    'sv-amarilla': { pos: [-2.2, 1.6, 12], target: [3.75, 2.2, 12] },
+    'sv-planta':  { pos: [0.01, 24, 8], target: [0, 0, 8] }
+  };
+  let anim = null;
+  function go(id, instant) {
+    const v = VIEWS[id];
+    Object.keys(VIEWS).forEach(k => { const b = document.getElementById(k); if (b) b.setAttribute('aria-pressed', k === id ? 'true' : 'false'); });
+    shell.children.forEach(c => { if (c.material === M.brick || c.material === M.rib) c.visible = id !== 'sv-planta'; });
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (instant || reduce) { camera.position.set(...v.pos); controls.target.set(...v.target); anim = null; return; }
+    anim = { t: 0, p0: camera.position.clone(), t0: controls.target.clone(), p1: new THREE.Vector3(...v.pos), t1: new THREE.Vector3(...v.target) };
+  }
+  Object.keys(VIEWS).forEach(id => { const b = document.getElementById(id); if (b) b.addEventListener('click', () => go(id)); });
+  go('sv-general', true);
+
+  function resize() { const w = stage.clientWidth, h = stage.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / Math.max(h, 1); camera.updateProjectionMatrix(); }
+  new ResizeObserver(resize).observe(stage); resize();
+  const loading = stage.querySelector('.loading'); if (loading) loading.remove();
+  (function frame() {
+    if (anim) {
+      anim.t = Math.min(1, anim.t + 0.03); const e = 1 - Math.pow(1 - anim.t, 3);
+      camera.position.lerpVectors(anim.p0, anim.p1, e); controls.target.lerpVectors(anim.t0, anim.t1, e);
+      if (anim.t >= 1) anim = null;
+    }
+    controls.update(); renderer.render(scene, camera); requestAnimationFrame(frame);
+  })();
+    }
+  })();
+</script>
+<script>
+  // Marca en el menú el apartado visible.
+  (function () {
+    const links = Array.from(document.querySelectorAll('nav a'));
+    const sections = links.map(a => document.querySelector(a.getAttribute('href')));
+    if (!('IntersectionObserver' in window)) return;
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (!e.isIntersecting) return;
+        links.forEach(a => a.setAttribute('aria-current', a.getAttribute('href') === '#' + e.target.id ? 'true' : 'false'));
+      });
+    }, { rootMargin: '-40% 0px -55% 0px' });
+    sections.forEach(s => s && io.observe(s));
+  })();
+</script>
+
+<div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Foto a tamaño completo">
+  <img alt="">
+  <button class="lb-cerrar" aria-label="Cerrar">×</button>
+  <button class="lb-ant" aria-label="Foto anterior">‹</button>
+  <button class="lb-sig" aria-label="Foto siguiente">›</button>
+</div>
+<script>
+  (function () {
+    var links = [].slice.call(document.querySelectorAll('.galeria a')), lb = document.getElementById('lightbox'), img = lb.querySelector('img'), i = 0;
+    function show(n) { i = (n + links.length) % links.length; img.src = links[i].getAttribute('href'); img.alt = links[i].querySelector('img').alt; }
+    function open(n) { show(n); lb.classList.add('open'); document.body.style.overflow = 'hidden'; lb.querySelector('.lb-cerrar').focus(); }
+    function close() { lb.classList.remove('open'); document.body.style.overflow = ''; links[i].focus(); }
+    links.forEach(function (a, n) { a.removeAttribute('target'); a.addEventListener('click', function (e) { e.preventDefault(); open(n); }); });
+    lb.querySelector('.lb-ant').addEventListener('click', function (e) { e.stopPropagation(); show(i - 1); });
+    lb.querySelector('.lb-sig').addEventListener('click', function (e) { e.stopPropagation(); show(i + 1); });
+    lb.addEventListener('click', function (e) { if (e.target !== img) close(); });
+    document.addEventListener('keydown', function (e) {
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'Escape') close(); else if (e.key === 'ArrowLeft') show(i - 1); else if (e.key === 'ArrowRight') show(i + 1);
+    });
+  })();
+</script>
+</html>
