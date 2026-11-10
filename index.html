@@ -3,6 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>
+  // Carga los modelos 3D. Servida desde un servidor usa los .json; abierta con doble clic
+  // (file://) usa los .js equivalentes, porque el navegador no deja leer .json en local.
+  window.cargarModelo = function (url) {
+    if (location.protocol !== 'file:') return fetch(url).then(function (r) { return r.json(); });
+    return new Promise(function (ok, ko) {
+      window.__modelos = window.__modelos || {};
+      if (window.__modelos[url]) return ok(window.__modelos[url]);
+      var sc = document.createElement('script');
+      sc.src = url.replace(/\.json$/, '.js');
+      sc.onload = function () { ok(window.__modelos[url]); };
+      sc.onerror = ko;
+      document.head.appendChild(sc);
+    });
+  };
+</script>
 <title>Sala Retos Hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap">
@@ -216,11 +232,11 @@ footer { padding-block: 28px; color: var(--muted); font-size: 14px; }
           <div class="group">
             <h4 style="margin:0;font-family:var(--display);font-size:17px">Qué ofrece según el fabricante</h4>
             <ul class="list">
-              <li><strong>Movilidad ágil:</strong> robot cuadrúpedo de unos 15 kg que camina, corre a hasta 3,5 m/s, sube escalones de hasta 16 cm y pendientes de 40°.</li>
+              <li><strong>Movilidad ágil:</strong> robot cuadrúpedo de unos 15 kg que camina y corre a hasta 3,5 m/s.</li>
               <li><strong>Percepción del entorno:</strong> un LiDAR 4D L2 con visión de 360° × 96° le permite detectar obstáculos desde 5 cm, esquivarlos y generar mapas 3D del espacio.</li>
               <li><strong>Visión en tiempo real:</strong> una cámara gran angular HD (1080p, 120°) transmite imagen en directo a la aplicación.</li>
               <li><strong>Interacción por voz:</strong> micrófono y altavoz integrados para dar órdenes de voz y usar el intercomunicador.</li>
-              <li><strong>Conectividad completa:</strong> Wi-Fi 6, Bluetooth 5.2 y 4G con GPS.</li>
+              <li><strong>Conectividad:</strong> Wi-Fi.</li>
               <li><strong>Control desde la aplicación:</strong> la app Unitree Go permite manejarlo a distancia, ver la cámara y el mapa, tomar fotos y vídeos y lanzar acciones predefinidas.</li>
               <li><strong>Autonomía:</strong> entre 1 y 2 horas con su batería inteligente de 8000 mAh.</li>
               
@@ -304,7 +320,7 @@ footer { padding-block: 28px; color: var(--muted); font-size: 14px; }
     <div class="wrap">
       <div class="eyebrow">Qué se puede hacer</div>
       <h2>Lo que ya funciona con el Go2</h2>
-      <p class="lead">Por ahora solo se ha desarrollado el Unitree Go2. Todo se hace mediante software, aprovechando los sensores y las interfaces del robot. La navegación funciona por Ethernet y todas las funciones se manejan desde una aplicación web común.</p>
+      <p class="lead">Por ahora solo se ha desarrollado el Unitree Go2. Todo se hace mediante software, aprovechando los sensores y las interfaces del robot. La navegación funciona por Ethernet y todas las funciones se manejan desde una aplicación web común. Además, se está preparando una API documentada con OpenAPI y unos SDK propios para que cada equipo de Retos pueda obtener datos y enviarle órdenes al robot desde su propio código.</p>
 
       <div class="group">
         <h3>Navegación y adaptación al entorno</h3>
@@ -326,7 +342,7 @@ footer { padding-block: 28px; color: var(--muted); font-size: 14px; }
           <video controls preload="none" playsinline poster="video/prueba-sala.jpg" width="1280" height="720">
             <source src="video/prueba-sala.mp4" type="video/mp4">
           </video>
-          <figcaption>Vídeo de una prueba en la sala: el Go2 se desplaza por la sala esquivando objetos (32 s).</figcaption>
+          <figcaption>Vídeo de una prueba en la sala: el Go2 se desplaza por la sala esquivando objetos.</figcaption>
         </figure>
       </div>
 
@@ -515,7 +531,7 @@ footer { padding-block: 28px; color: var(--muted); font-size: 14px; }
     const parts = []; let t = 0, target = 0;
     function resize() { const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
     new ResizeObserver(resize).observe(box); resize();
-    fetch('modelo/brain_modelo.json').then(r => r.json()).then(data => {
+    cargarModelo('modelo/brain_modelo.json').then(data => {
       data.piezas.forEach(p => {
         const g = new THREE.BufferGeometry();
         g.setAttribute('position', new THREE.Float32BufferAttribute(p.vertices, 3));
@@ -564,7 +580,7 @@ footer { padding-block: 28px; color: var(--muted); font-size: 14px; }
       function resize() { const w = box.clientWidth, h = box.clientHeight; renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix(); }
       new ResizeObserver(resize).observe(box); resize();
       const bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer;
-      fetch(url).then(r => r.json()).then(data => {
+      cargarModelo(url).then(data => {
         data.partes.forEach(p => {
           const q = new Uint16Array(bytes(p.v)), idx = new Uint32Array(bytes(p.i));
           const pos = new Float32Array(q.length);
@@ -833,7 +849,7 @@ footer { padding-block: 28px; color: var(--muted); font-size: 14px; }
 
   // ---------- robot Go2 (modelo oficial de Unitree, en metros con Z hacia arriba) ----------
   const bytes = s => Uint8Array.from(atob(s), c => c.charCodeAt(0)).buffer;
-  fetch('modelo/go2_modelo.json').then(r => r.json()).then(data => {
+  cargarModelo('modelo/go2_modelo.json').then(data => {
     const go2 = new THREE.Group();
     data.partes.forEach(p => {
       const q = new Uint16Array(bytes(p.v)), idx = new Uint32Array(bytes(p.i)), pos = new Float32Array(q.length);
